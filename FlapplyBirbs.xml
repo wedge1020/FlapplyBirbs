@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<rom-definition version="1.0">
+    <rom type="cartridge" title="Flapply Birb" version="1.0" />
+<binary path="obj/flapplybirb.vbin" />
+<textures>
+    <texture path="obj/texture00.vtex" />
+    <texture path="obj/texture01.vtex" />
+</textures>
+<sounds />
+</rom-definition>

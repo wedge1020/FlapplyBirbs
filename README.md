@@ -1,6 +1,6 @@
-# flappy
+# Flapply Birbs
 
-Vircon32 flappy bird-type game (written in assembly / machine code)
+Vircon32 "flappy bird"-type game (written in assembly / machine code)
 
 Struck by inspiration to attempt a Vircon32 game, and flappy bird came to
 mind. Further, doing so in assembly  language, because that just makes it
