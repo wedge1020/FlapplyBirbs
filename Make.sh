@@ -16,22 +16,22 @@ mkdir -p obj
 echo
 echo Assemble the ASM code
 echo --------------------------
-assemble   flappy.asm            -o obj/flappy.vbin   || abort_build
+assemble   FlapplyBirbs.asm      -o obj/FlapplyBirbs.vbin || abort_build
 
 echo
 echo Convert the PNG textures
 echo --------------------------
-png2vircon textures/00_title.png -o obj/00_title.vtex || abort_build
+png2vircon textures/00_title.png -o obj/00_title.vtex     || abort_build
 
 echo
 echo Convert the WAV sounds
 echo --------------------------
-wav2vircon sounds/00_title.wav   -o obj/00_title.vsnd || abort_build
+wav2vircon sounds/00_title.wav   -o obj/00_title.vsnd     || abort_build
 
 echo
 echo Pack the ROM
 echo --------------------------
-packrom flappy.xml               -o bin/flappy.v32    || abort_build
+packrom FlapplyBirbs.xml         -o bin/FlapplyBirbs.v32  || abort_build
 
 echo
 echo BUILD SUCCESSFUL

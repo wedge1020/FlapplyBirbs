@@ -61,7 +61,7 @@ Basically, I  `CALL` it, storing  the desired  INP IOPort offset  in `R0`
 (the parameter to this subroutine).
 
 It is  `OR`ed against the  value in `R1` (the  machine code for  the `IN`
-instruction from the base INP  IOPort)`, giving the specific port address
+instruction from the  base INP IOPort), giving the  specific port address
 needed for the transaction.
 
 This result is then stored in RAM,  at the precise address I desire it to
