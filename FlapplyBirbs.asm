@@ -46,7 +46,9 @@
 %define   P2_MODE       0x0000000A
 %define   P3_MODE       0x0000000B
 %define   TITLESCREEN   0
-%define   GAMEPLAY      1
+%define   GAMEPLAY1     1
+%define   GAMEPLAY2     2
+%define   GAMEPLAY3     3
 %define   PLAYER1       10
 %define   PLAYER2       20
 %define   PLAYER3       30
@@ -129,36 +131,93 @@ _start:
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;
-    ;; select and define region 0 (background 0)
+    ;; select and define GAMEPLAY1 region
     ;;
-    mov   R0,           0
+    mov   R0,           GAMEPLAY1
     out   REGION,       R0
     out   MINX,         R0
     out   MINY,         R0
     out   HOTX,         R0
     out   HOTY,         R0
-    mov   R0,           128
+    mov   R0,           255
     out   MAXX,         R0
-    mov   R0,           256
+    mov   R0,           359
     out   MAXY,         R0
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;
-    ;; select and define region 1 (background 1)
+    ;; select and define GAMEPLAY2 region
     ;;
-    mov   R0,           1
+    mov   R0,           GAMEPLAY2
     out   REGION,       R0
-    mov   R0,           128
+    mov   R0,           256
     out   MINX,         R0
     mov   R0,           0
     out   MINY,         R0
-    mov   R0,           128
+    mov   R0,           256
     out   HOTX,         R0
     mov   R0,           0
     out   HOTY,         R0
-    mov   R0,           256
+    mov   R0,           511
     out   MAXX,         R0
+    mov   R0,           359
+    out   MAXY,         R0
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;
+    ;; select and define GAMEPLAY3 region
+    ;;
+    mov   R0,           GAMEPLAY3
+    out   REGION,       R0
+    mov   R0,           512
+    out   MINX,         R0
+    mov   R0,           0
+    out   MINY,         R0
+    mov   R0,           512
+    out   HOTX,         R0
+    mov   R0,           0
+    out   HOTY,         R0
+    mov   R0,           767
+    out   MAXX,         R0
+    mov   R0,           359
+    out   MAXY,         R0
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;
+    ;; select and define PLAYER1 region
+    ;;
+    mov   R0,           PLAYER1
+    out   REGION,       R0
+    mov   R0,           0
+    out   MINX,         R0
     mov   R0,           256
+    out   MINY,         R0
+    mov   R0,           0
+    out   HOTX,         R0
+    mov   R0,           256
+    out   HOTY,         R0
+    mov   R0,           32
+    out   MAXX,         R0
+    mov   R0,           287
+    out   MAXY,         R0
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;
+    ;; select and define TITLESCREEN region
+    ;;
+    mov   R0,           TITLESCREEN
+    out   REGION,       R0
+    mov   R0,           256
+    out   MINX,         R0
+    mov   R0,           256
+    out   MINY,         R0
+    mov   R0,           256
+    out   HOTX,         R0
+    mov   R0,           256
+    out   HOTY,         R0
+    mov   R0,           447
+    out   MAXX,         R0
+    mov   R0,           319
     out   MAXY,         R0
 
     wait
@@ -219,8 +278,8 @@ _frame_0_end:
 
 _frame_0_update:                         ; game in session
 
-    out   TEXTURE,      GAMEPLAY
-    out   REGION,       GAMEPLAY
+    out   TEXTURE,      0
+    out   REGION,       GAMEPLAY1
     out   DRAWX,        0
     out   DRAWY,        0
     out   GPUCMD,       DRAW
