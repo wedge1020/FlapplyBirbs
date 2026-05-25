@@ -3,8 +3,7 @@
     <rom type="cartridge" title="Flapply Birb" version="1.0" />
 <binary path="obj/flapplybirb.vbin" />
 <textures>
-    <texture path="obj/texture00.vtex" />
-    <texture path="obj/texture01.vtex" />
+    <texture path="obj/00-basic.vtex" />
 </textures>
 <sounds />
 </rom-definition>

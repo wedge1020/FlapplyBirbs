@@ -6,6 +6,18 @@ Struck by inspiration to attempt a Vircon32 game, and flappy bird came to
 mind. Further, doing so in assembly  language, because that just makes it
 more fun.
 
+## up to three players of simultaneous fun
+
+The game supports up to three players, and will continuously check on the
+first three system gamepad ports for connected gamepads.  Once connected,
+the title screen sequence will be displayed in the screen slice for  that
+player; upon hitting `START` on their controller, the game will begin, on
+the current level the other players are playing  (or at the beginning  in
+the case of no existing gameplay).
+
+This way, music can be adequately synchronized,  and it becomes more of a
+party game than some more involved and drawn out competition.
+
 ## gravity with sine?
 
 The initial thought  going into this was becoming enamoured  with an idea
