@@ -16,7 +16,7 @@ mkdir -p obj
 echo
 echo Assemble the ASM code
 echo --------------------------
-assemble   FlapplyBirbs.asm      -o obj/FlapplyBirbs.vbin || abort_build
+assemble -g program FlapplyBirbs.asm      -o obj/FlapplyBirbs.vbin || abort_build
 
 echo
 echo Convert the PNG textures

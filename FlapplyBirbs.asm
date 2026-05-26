@@ -61,19 +61,22 @@
 ;;
 _detect:
     push  R2
+    push  R3                          ; loop counter
     mov   R2,           [CONNECTION]  ; variable storing connected gamepads
-    mov   R0,           0             ; gamepad ID
+    mov   R3,           0             ; gamepad ID
 
 _detect_loop:
-    out   GAMEPAD,      R0            ; select gamepad
+    out   GAMEPAD,      R3            ; select gamepad
     in    R1,           CONNECTED     ; check if connected    
     shl   R1,           R0            ; shift left by gamepad ID
     or    R2,           R1            ; bitwise iOR connections register
-    iadd  R0,           1             ; increment gamepad ID
+    iadd  R3,           1             ; increment gamepad ID
+    mov   R0,           R3            ; copy R3 into R0 for comparison
     ilt   R0,           3             ; if gamepad ID is less than 3 ...
     jt    R0,           _detect_loop  ; ... perform another iteration
 
     mov   [CONNECTION], R2            ; store updated CONNECTION variable
+    pop   R3
     pop   R2
     ret
 
