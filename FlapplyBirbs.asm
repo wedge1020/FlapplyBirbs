@@ -261,36 +261,31 @@ _start:
 ;; frame 0: gamepad 0/player 1
 ;; frame 1: gamepad 1/player 2
 ;; frame 2: gamepad 2/player 3
-;; frame 3: sound update
-;; frame 4: gamepad detection and screen refreshing
+;;
+;; gamepad detection, sound update, other tasks occur each frame
 ;;
 _update:
     in    R0,           FRAME            ; obtain current frame from FrameCounter
-    imod  R0,           5                ; modulus by 5
+    imod  R0,           3                ; modulus by 3
+
     mov   R1,           _frame_offsets   ; load frame processing routine offsets
     iadd  R1,           R0               ; increment offset based on frame
     mov   R1,           [R1]             ; dereference offset to get actual offset
+
+    mov   R2,           _player_modes
+    iadd  R2,           R0
+
     out   GAMEPAD,      R0               ; select gamepad based on frame
-    call  R1                             ; call the specific frame processing
-    wait
-    jmp   _update
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; gamepad 0 / player 1 processing
-;;
-_frame_0:
-
     in    R0,           CONNECTED        ; check if player's gamepad is connected
-    jf    R0,           _frame_0_end     ; if not, do nothing
+    jf    R0,           _wait_update     ; if not, do nothing
 
-    mov   R0,           [P1_MODE]        ; determine player mode (0, non-zero)
-    jt    R0,           _frame_0_update  ; if non-zero -> gameplay, update frame
+    mov   R0,           [R2]             ; check player's mode (0->title, 1->gameplay)
+    jt    R0,           _update_frame    ; if non-zero: gameplay
 
     mov   R0,           INP_START        ; player at title screen, check for START
     call  GETINPUT
     igt   R0,           0
-    mov   [P1_MODE],    R0               ; save mode to P1_MODE
+    mov   [R2],         R0               ; save mode to memory
 
     jt    R0,           _player_start    ; play sound if start is pressed
 
@@ -300,13 +295,52 @@ _frame_0:
     out   DRAWY,        0
     out   GPUCMD,       DRAW
 
-_frame_0_end:
-    ret
+    jmp  _wait_update
 
-_frame_0_update:                         ; game in session
+_update_frame:                           ; gameplay in session
+
+    call  R1                             ; call the specific frame processing
+
+_wait_update:
+    call  _detect
+
+    wait
+
+    jmp   _update
+
+_player1:
+    mov   R2,           PLAYER1A
 
     out   TEXTURE,      0
     out   REGION,       GAMEPLAY1
+    call  _process
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; gamepad 1 / player 2 processing
+;;
+_player2:
+    mov   R2,           PLAYER1A ; PLAYER2A
+
+    out   TEXTURE,      0
+    out   REGION,       GAMEPLAY1
+    call  _process
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; gamepad 2 / player 3 processing
+;;
+_player3:
+    mov   R2,           PLAYER1A ; PLAYER3A
+
+    out   TEXTURE,      0
+    out   REGION,       GAMEPLAY1
+    call  _process
+    ret
+
+_process:
     out   DRAWX,        0
     out   DRAWY,        0
     out   GPUCMD,       DRAW
@@ -318,14 +352,15 @@ _frame_0_update:                         ; game in session
     
     isub  R4,           5
 
-    out   REGION,       PLAYER1B
+    iadd  R2,           1
+    out   REGION,       R2
 
     jmp   _player_done
 
 _player_not_up:
     iadd  R4,           3
 
-    out   REGION,       PLAYER1A
+    out   REGION,       R2
 
 _player_done:
     out   DRAWX,        R3
@@ -333,48 +368,11 @@ _player_done:
     out   GPUCMD,       DRAW
     ret
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; gamepad 1 / player 2 processing
-;;
-_frame_1:
-    ret
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; gamepad 2 / player 3 processing
-;;
-_frame_2:
-    ret
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; sound processing
-;;
-_frame_3:
-    ret
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; basic service routine: clear the screen, check the gamepads
-;;
-_frame_4:
-    ;mov   R0,           0x00000000
-    ;out   GPUCMD,       CLS
-    call  _detect
-    ret
-
 _player_start:
     jmp   _update
 
-_title:
-    mov   R0,           0
-    out   TEXTURE,      0
-    out   REGION,       0
-    out   DRAWX,        0
-    out   DRAWY,        0
-    out   GPUCMD,       DRAW
-    hlt
+_player_modes:
+    integer P1_MODE, P2_MODE, P3_MODE
 
 _frame_offsets:
-    pointer _frame_0, _frame_1, _frame_2, _frame_3, _frame_4
+    pointer _player1, _player2, _player3
