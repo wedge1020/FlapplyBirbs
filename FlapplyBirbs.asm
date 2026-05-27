@@ -105,7 +105,7 @@ _start:
     ;; through the desired range of gamepad button ports (0x403-0x40C), not
     ;; needing named separate routines to transact each button
     ;;
-    mov   R0,           0x4E208000 ; machine code: mov  R1, immediate
+    mov   R0,           0x4E200000 ; machine code: mov  R1, immediate
     mov   [0x00000000], R0
     mov   R0,           0x5C000400 ; immediate:    0x5C000400
     mov   [0x00000001], R0
