@@ -51,7 +51,7 @@ during runtime.
 Here's the routine (8 words starting at RAM address 0x00000000):
 
 ```
-    mov   R0,                  0x4E208000 ; mov  R1,           0x5C000400
+    mov   R0,                  0x4E200000 ; mov  R1,           0x5C000400
     mov   [0x00000000],        R0
     mov   R0,                  0x5C000400
     mov   [0x00000001],        R0
