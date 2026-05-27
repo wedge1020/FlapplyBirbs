@@ -49,7 +49,9 @@
 %define   GAMEPLAY1     1
 %define   GAMEPLAY2     2
 %define   GAMEPLAY3     3
-%define   PLAYER1       10
+%define   PLAYER1A      10
+%define   PLAYER1B      11
+%define   PLAYER1C      12
 %define   PLAYER2       20
 %define   PLAYER3       30
 
@@ -187,21 +189,40 @@ _start:
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;
-    ;; select and define PLAYER1 region
+    ;; select and define PLAYER1A region
     ;;
-    mov   R0,           PLAYER1
+    mov   R0,           PLAYER1A
     out   REGION,       R0
     mov   R0,           0
     out   MINX,         R0
-    mov   R0,           256
+    mov   R0,           360
     out   MINY,         R0
     mov   R0,           0
     out   HOTX,         R0
-    mov   R0,           256
+    mov   R0,           360
     out   HOTY,         R0
-    mov   R0,           32
+    mov   R0,           40
     out   MAXX,         R0
-    mov   R0,           287
+    mov   R0,           390
+    out   MAXY,         R0
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;
+    ;; select and define PLAYER1B region
+    ;;
+    mov   R0,           PLAYER1B
+    out   REGION,       R0
+    mov   R0,           42
+    out   MINX,         R0
+    mov   R0,           360
+    out   MINY,         R0
+    mov   R0,           42
+    out   HOTX,         R0
+    mov   R0,           360
+    out   HOTY,         R0
+    mov   R0,           82
+    out   MAXX,         R0
+    mov   R0,           390
     out   MAXY,         R0
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -218,12 +239,15 @@ _start:
     out   HOTX,         R0
     mov   R0,           256
     out   HOTY,         R0
-    mov   R0,           447
+    mov   R0,           452
     out   MAXX,         R0
-    mov   R0,           319
+    mov   R0,           430
     out   MAXY,         R0
 
     wait
+
+    mov   R3,           80
+    mov   R4,           160
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -287,8 +311,26 @@ _frame_0_update:                         ; game in session
     out   DRAWY,        0
     out   GPUCMD,       DRAW
 
-    out   REGION,       PLAYER1
+    mov   R0,           INP_UP           ; player at title screen, check for START
+    call  GETINPUT
+    igt   R0,           0
+    jf    R0,           _player_not_up
+    
+    isub  R4,           5
 
+    out   REGION,       PLAYER1B
+
+    jmp   _player_done
+
+_player_not_up:
+    iadd  R4,           3
+
+    out   REGION,       PLAYER1A
+
+_player_done:
+    out   DRAWX,        R3
+    out   DRAWY,        R4
+    out   GPUCMD,       DRAW
     ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -317,8 +359,8 @@ _frame_3:
 ;; basic service routine: clear the screen, check the gamepads
 ;;
 _frame_4:
-    mov   R0,           0x00000000
-    out   GPUCMD,       CLS
+    ;mov   R0,           0x00000000
+    ;out   GPUCMD,       CLS
     call  _detect
     ret
 
