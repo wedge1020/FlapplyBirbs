@@ -45,6 +45,12 @@
 %define   P1_MODE       0x00000009
 %define   P2_MODE       0x0000000A
 %define   P3_MODE       0x0000000B
+%define   P1_X          0x0000000C
+%define   P2_X          0x0000000D
+%define   P3_X          0x0000000E
+%define   P1_Y          0x0000000F
+%define   P2_Y          0x00000010
+%define   P3_Y          0x00000011
 %define   TITLESCREEN   0
 %define   GAMEPLAY1     1
 %define   GAMEPLAY2     2
@@ -246,8 +252,18 @@ _start:
 
     wait
 
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;
+    ;; initialize player X, Y coordinates (all players)
+    ;;
     mov   R3,           80
+    mov   [P1_X],       R3
+    mov   [P2_X],       R3
+    mov   [P3_X],       R3
     mov   R4,           160
+    mov   [P1_Y],       R4
+    mov   [P2_Y],       R4
+    mov   [P3_Y],       R4
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -264,18 +280,24 @@ _start:
 ;;
 ;; gamepad detection, sound update, other tasks occur each frame
 ;;
+;; R3: X coordinate
+;; R4: Y coordinate
+;; R5: frame (0-2)
+;; R6: gameplay theme (texture)
+;; R7: gameplay region (0-3)
+;;
 _update:
-    in    R0,           FRAME            ; obtain current frame from FrameCounter
-    imod  R0,           3                ; modulus by 3
+    in    R5,           FRAME            ; obtain current frame from FrameCounter
+    imod  R5,           3                ; modulus by 3
 
     mov   R1,           _frame_offsets   ; load frame processing routine offsets
-    iadd  R1,           R0               ; increment offset based on frame
+    iadd  R1,           R5               ; increment offset based on frame
     mov   R1,           [R1]             ; dereference offset to get actual offset
 
     mov   R2,           _player_modes
-    iadd  R2,           R0
+    iadd  R2,           R5
 
-    out   GAMEPAD,      R0               ; select gamepad based on frame
+    out   GAMEPAD,      R5               ; select gamepad based on frame
     in    R0,           CONNECTED        ; check if player's gamepad is connected
     jf    R0,           _wait_update     ; if not, do nothing
 
@@ -301,8 +323,20 @@ _update_frame:                           ; gameplay in session
 
     call  R1                             ; call the specific frame processing
 
+    out   TEXTURE,      R6
+    out   REGION,       R7
+    call  _process
+
 _wait_update:
     call  _detect
+
+    mov   R0,           P1_X
+    iadd  R0,           R5
+    mov   [R0],         R3               ; store current player X to memory
+
+    mov   R0,           P1_Y
+    iadd  R0,           R5
+    mov   [R0],         R4               ; store current player Y to memory
 
     wait
 
@@ -310,10 +344,8 @@ _wait_update:
 
 _player1:
     mov   R2,           PLAYER1A
-
-    out   TEXTURE,      0
-    out   REGION,       GAMEPLAY1
-    call  _process
+    mov   R3,           [P1_X]           ; load current player X from memory
+    mov   R4,           [P1_Y]           ; load current player Y from memory
     ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -322,10 +354,8 @@ _player1:
 ;;
 _player2:
     mov   R2,           PLAYER1A ; PLAYER2A
-
-    out   TEXTURE,      0
-    out   REGION,       GAMEPLAY1
-    call  _process
+    mov   R3,           [P2_X]
+    mov   R4,           [P2_Y]
     ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -334,10 +364,8 @@ _player2:
 ;;
 _player3:
     mov   R2,           PLAYER1A ; PLAYER3A
-
-    out   TEXTURE,      0
-    out   REGION,       GAMEPLAY1
-    call  _process
+    mov   R3,           [P3_X]
+    mov   R4,           [P3_Y]
     ret
 
 _process:
