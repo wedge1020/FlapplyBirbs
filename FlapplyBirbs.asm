@@ -265,6 +265,15 @@ _start:
     mov   [P2_Y],       R4
     mov   [P3_Y],       R4
 
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;
+    ;; initialize player modes (0 for title screen)
+    ;;
+    mov   R0,           0
+    mov   [P1_MODE],    R0
+    mov   [P2_MODE],    R0
+    mov   [P3_MODE],    R0
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; _update: routine to manage player view and input (this is JMPed to, not CALLed)
@@ -299,21 +308,24 @@ _update:
 
     out   GAMEPAD,      R5               ; select gamepad based on frame
     in    R0,           CONNECTED        ; check if player's gamepad is connected
-    jf    R0,           _wait_update     ; if not, do nothing
+    jf    R0,           _wait_update     ; if not, do nothing (skip this next part)
 
     mov   R0,           [R2]             ; check player's mode (0->title, 1->gameplay)
-    jt    R0,           _update_frame    ; if non-zero: gameplay
+    jt    R0,           _update_frame    ; if non-zero: proceed to gameplay logic
 
     mov   R0,           INP_START        ; player at title screen, check for START
-    call  GETINPUT
-    igt   R0,           0
+    call  GETINPUT                       ; call custom RAM machine code routine
+    igt   R0,           0                ; R0 being positive means the key is pressed
     mov   [R2],         R0               ; save mode to memory
 
     jt    R0,           _player_start    ; play sound if start is pressed
 
     out   TEXTURE,      TITLESCREEN      ; draw title screen in slice
     out   REGION,       TITLESCREEN
-    out   DRAWX,        0
+
+    mov   R0,           _player_slices   ; _player_slices has the starting X value
+    iadd  R0,           R5
+    out   DRAWX,        R0
     out   DRAWY,        0
     out   GPUCMD,       DRAW
 
@@ -398,6 +410,9 @@ _player_done:
 
 _player_start:
     jmp   _update
+
+_player_slices:
+    integer 0, 214, 427
 
 _player_modes:
     integer P1_MODE, P2_MODE, P3_MODE
