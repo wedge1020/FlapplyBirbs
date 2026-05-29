@@ -343,7 +343,7 @@ _update:
     iadd  R1,           R5               ; increment offset based on frame
     mov   R1,           [R1]             ; dereference offset to get actual offset
 
-    mov   R2,           _player_modes
+    mov   R2,           P1_MODE
     iadd  R2,           R5
 
     out   GAMEPAD,      R5               ; select gamepad based on frame
@@ -360,8 +360,9 @@ _update:
 
     jt    R0,           _player_start    ; play sound if start is pressed
 
+_boop:
     out   TEXTURE,      0                ; draw title screen in slice
-	out   REGION,       GAMEPLAY1
+    out   REGION,       GAMEPLAY1
     mov   R0,           _player_slices   ; _player_slices has the starting X value
     iadd  R0,           R5
     out   DRAWX,        R0
@@ -371,11 +372,11 @@ _update:
     out   REGION,       TITLESCREEN
     out   GPUCMD,       DRAW
 
-	mov   R0,           R5
-	iadd  R0,           48
-	out   TEXTURE,      -1
-	out   REGION,       R0
-	out   DRAWX,        500
+    mov   R0,           R5
+    iadd  R0,           48
+    out   TEXTURE,      -1
+    out   REGION,       R0
+    out   DRAWX,        500
     out   GPUCMD,       DRAW
 
     jmp  _wait_update
@@ -462,9 +463,6 @@ _player_start:
 
 _player_slices:
     integer 0, 214, 427
-
-_player_modes:
-    integer P1_MODE, P2_MODE, P3_MODE
 
 _frame_offsets:
     pointer _player1, _player2, _player3
