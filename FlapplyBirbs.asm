@@ -59,7 +59,9 @@
 %define   PLAYER1B      11
 %define   PLAYER1C      12
 %define   PLAYER2       20
-%define   PLAYER3       30
+%define   PLAYER3A      30
+%define   PLAYER3B      31
+%define   PLAYER3C      32
 
     jmp   _start
 
@@ -233,17 +235,55 @@ _start:
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;
+    ;; select and define PLAYER3A region
+    ;;
+    mov   R0,           PLAYER3A
+    out   REGION,       R0
+    mov   R0,           0
+    out   MINX,         R0
+    mov   R0,           422
+    out   MINY,         R0
+    mov   R0,           0
+    out   HOTX,         R0
+    mov   R0,           422
+    out   HOTY,         R0
+    mov   R0,           40
+    out   MAXX,         R0
+    mov   R0,           450
+    out   MAXY,         R0
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;
+    ;; select and define PLAYER3B region
+    ;;
+    mov   R0,           PLAYER3B
+    out   REGION,       R0
+    mov   R0,           42
+    out   MINX,         R0
+    mov   R0,           422
+    out   MINY,         R0
+    mov   R0,           42
+    out   HOTX,         R0
+    mov   R0,           422
+    out   HOTY,         R0
+    mov   R0,           82
+    out   MAXX,         R0
+    mov   R0,           450
+    out   MAXY,         R0
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;
     ;; select and define TITLESCREEN region
     ;;
     mov   R0,           TITLESCREEN
     out   REGION,       R0
     mov   R0,           256
     out   MINX,         R0
-    mov   R0,           256
+    mov   R0,           360
     out   MINY,         R0
     mov   R0,           256
     out   HOTX,         R0
-    mov   R0,           256
+    mov   R0,           360
     out   HOTY,         R0
     mov   R0,           452
     out   MAXX,         R0
@@ -320,13 +360,22 @@ _update:
 
     jt    R0,           _player_start    ; play sound if start is pressed
 
-    out   TEXTURE,      TITLESCREEN      ; draw title screen in slice
-    out   REGION,       TITLESCREEN
-
+    out   TEXTURE,      0                ; draw title screen in slice
+	out   REGION,       GAMEPLAY1
     mov   R0,           _player_slices   ; _player_slices has the starting X value
     iadd  R0,           R5
     out   DRAWX,        R0
     out   DRAWY,        0
+    out   GPUCMD,       DRAW
+
+    out   REGION,       TITLESCREEN
+    out   GPUCMD,       DRAW
+
+	mov   R0,           R5
+	iadd  R0,           48
+	out   TEXTURE,      -1
+	out   REGION,       R0
+	out   DRAWX,        500
     out   GPUCMD,       DRAW
 
     jmp  _wait_update
@@ -375,7 +424,7 @@ _player2:
 ;; gamepad 2 / player 3 processing
 ;;
 _player3:
-    mov   R2,           PLAYER1A ; PLAYER3A
+    mov   R2,           PLAYER3A ; PLAYER3A
     mov   R3,           [P3_X]
     mov   R4,           [P3_Y]
     ret
@@ -385,7 +434,7 @@ _process:
     out   DRAWY,        0
     out   GPUCMD,       DRAW
 
-    mov   R0,           INP_UP           ; player at title screen, check for START
+    mov   R0,           INP_DOWN         ; player at title screen, check for START
     call  GETINPUT
     igt   R0,           0
     jf    R0,           _player_not_up
