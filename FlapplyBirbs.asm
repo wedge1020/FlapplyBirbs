@@ -152,7 +152,7 @@ _start:
     out   MINY,         R0
     out   HOTX,         R0
     out   HOTY,         R0
-    mov   R0,           255
+    mov   R0,           211
     out   MAXX,         R0
     mov   R0,           359
     out   MAXY,         R0
@@ -171,7 +171,7 @@ _start:
     out   HOTX,         R0
     mov   R0,           0
     out   HOTY,         R0
-    mov   R0,           511
+    mov   R0,           467
     out   MAXX,         R0
     mov   R0,           359
     out   MAXY,         R0
@@ -190,7 +190,7 @@ _start:
     out   HOTX,         R0
     mov   R0,           0
     out   HOTY,         R0
-    mov   R0,           767
+    mov   R0,           723
     out   MAXX,         R0
     mov   R0,           359
     out   MAXY,         R0
@@ -298,7 +298,9 @@ _start:
     ;;
     mov   R3,           80
     mov   [P1_X],       R3
+    mov   R3,           292
     mov   [P2_X],       R3
+    mov   R3,           506
     mov   [P3_X],       R3
     mov   R4,           160
     mov   [P1_Y],       R4
@@ -313,6 +315,9 @@ _start:
     mov   [P1_MODE],    R0
     mov   [P2_MODE],    R0
     mov   [P3_MODE],    R0
+
+    mov   R6,           0
+    mov   R7,           GAMEPLAY1
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -334,6 +339,7 @@ _start:
 ;; R5: frame (0-2)
 ;; R6: gameplay theme (texture)
 ;; R7: gameplay region (0-3)
+;; R8: slice X coordinate
 ;;
 _update:
     in    R5,           FRAME            ; obtain current frame from FrameCounter
@@ -345,6 +351,10 @@ _update:
 
     mov   R2,           P1_MODE
     iadd  R2,           R5
+
+    mov   R8,           _player_slices   ; _player_slices has the starting X value
+    iadd  R8,           R5
+    mov   R8,           [R8]
 
     out   GAMEPAD,      R5               ; select gamepad based on frame
     in    R0,           CONNECTED        ; check if player's gamepad is connected
@@ -363,9 +373,7 @@ _update:
 _boop:
     out   TEXTURE,      0                ; draw title screen in slice
     out   REGION,       GAMEPLAY1
-    mov   R0,           _player_slices   ; _player_slices has the starting X value
-    iadd  R0,           R5
-    out   DRAWX,        R0
+    out   DRAWX,        R8
     out   DRAWY,        0
     out   GPUCMD,       DRAW
 
@@ -385,8 +393,12 @@ _update_frame:                           ; gameplay in session
 
     call  R1                             ; call the specific frame processing
 
-    out   TEXTURE,      R6
+    out   TEXTURE,      R6               ; select the current background and display it
     out   REGION,       R7
+    out   DRAWX,        R8
+    out   DRAWY,        0
+    out   GPUCMD,       DRAW
+
     call  _process
 
 _wait_update:
@@ -431,11 +443,7 @@ _player3:
     ret
 
 _process:
-    out   DRAWX,        0
-    out   DRAWY,        0
-    out   GPUCMD,       DRAW
-
-    mov   R0,           INP_DOWN         ; player at title screen, check for START
+    mov   R0,           INP_DOWN         ; control active player
     call  GETINPUT
     igt   R0,           0
     jf    R0,           _player_not_up
