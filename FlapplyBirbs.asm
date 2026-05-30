@@ -422,7 +422,7 @@ _boop:
     out   GPUCMD,       DRAW
 
     out   REGION,       TITLESCREEN
-	iadd  R8,           8
+    iadd  R8,           8
     out   DRAWX,        R8
     out   GPUCMD,       DRAW
 
@@ -437,19 +437,20 @@ _boop:
 
 _update_frame:                           ; gameplay in session
 
-    call  R1                             ; call the specific frame processing
-
     out   TEXTURE,      R6               ; select the current background and display it
     out   REGION,       R7
     out   DRAWX,        R8
     out   DRAWY,        0
     out   GPUCMD,       DRAW
 
-	mov   R0,           P1_DELAY         ; check for player delay
-	iadd  R0,           R5
-	mov   R0,           [R0]
-	jt    R0,           _get_ready    
+    mov   R0,           P1_DELAY         ; check for player delay
+    iadd  R0,           R5
+    mov   R0,           [R0]
+    cib   R0
+    jt    R0,           _get_ready    
 
+_main_frame:
+    call  R1                             ; call the specific frame processing
     call  _process
     ;call  _detect
 
@@ -471,51 +472,45 @@ _blank_slice:
     out   DRAWY,        0
     out   GPUCMD,       DRAW
 
-	mov   R0,           0
+    mov   R0,           0
     mov   [R2],         R0               ; reset slice
 
-	jmp   _wait_update
+    jmp   _wait_update
 
 _get_ready:
-	mov   R0,           P1_DELAY         ; get player delay
-	iadd  R0,           R5
-	mov   R1,           [R0]
+    mov   R0,           P1_DELAY         ; get player delay
+    iadd  R0,           R5
+    mov   R1,           [R0]
 
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	;;
-	;; y = 16 * sin (4 * PI/180 * delayvalue)
-	;;
-	mov   R0,           1
-	cif   R0
-	fmul  R0,           3.14159
-	fdiv  R0,           180.0
-	fmul  R0,           4.0
-	fmul  R0,           R1
-	sin   R0
-	fmul  R0,           8.0
-	cfi   R0
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;
+    ;; y = 16 * sin (4 * PI/180 * delayvalue)
+    ;;
+    mov   R0,           1
+    cif   R0
+    fmul  R0,           3.14159
+    fdiv  R0,           180.0
+    fmul  R0,           4.0
+    fmul  R0,           R1
+    sin   R0
+    fmul  R0,           8.0
+    cfi   R0
 
-	out   REGION,       GETREADY
-	iadd  R8,           8
-	out   DRAWX,        R8
-	mov   R1,           128
-	iadd  R1,           R0
-	out   DRAWY,        R1
-	out   GPUCMD,       DRAW
-
-    iadd  R0,           48
-    out   TEXTURE,      -1
-    out   REGION,       R0
-    out   DRAWX,        500
+    out   REGION,       GETREADY
+    iadd  R8,           8
+    out   DRAWX,        R8
+    mov   R1,           128
+    iadd  R1,           R0
+    out   DRAWY,        R1
     out   GPUCMD,       DRAW
 
-	mov   R0,           P1_DELAY         ; adjust player delay
-	iadd  R0,           R5
-	mov   R1,           [R0]
-	isub  R1,           1
-	mov   [R0],         R1
+    mov   R0,           P1_DELAY         ; adjust player delay
+    iadd  R0,           R5
+    mov   R1,           [R0]
+    isub  R1,           1
+    mov   [R0],         R1
 
-	jmp   _wait_update
+    jmp   _wait_update
 
 _player1:
     mov   R2,           PLAYER1A
@@ -568,11 +563,11 @@ _player_done:
     ret
 
 _player_start:
-	mov   R0,           P1_DELAY         ; set up player delay
-	iadd  R0,           R5
+    mov   R0,           P1_DELAY         ; set up player delay
+    iadd  R0,           R5
 
-	mov   R1,           60               ; delay for 1 second
-	mov   [R0],         R1               ; save to memory
+    mov   R1,           60               ; delay for 1 second
+    mov   [R0],         R1               ; save to memory
 
     jmp   _update
 
