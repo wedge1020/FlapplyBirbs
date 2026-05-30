@@ -356,6 +356,7 @@ _update:
     iadd  R8,           R5
     mov   R8,           [R8]
 
+_check:
     out   GAMEPAD,      R5               ; select gamepad based on frame
     in    R0,           CONNECTED        ; check if player's gamepad is connected
     jf    R0,           _wait_update     ; if not, do nothing (skip this next part)
@@ -400,9 +401,7 @@ _update_frame:                           ; gameplay in session
     out   GPUCMD,       DRAW
 
     call  _process
-
-_wait_update:
-    call  _detect
+    ;call  _detect
 
     mov   R0,           P1_X
     iadd  R0,           R5
@@ -412,8 +411,8 @@ _wait_update:
     iadd  R0,           R5
     mov   [R0],         R4               ; store current player Y to memory
 
+_wait_update:
     wait
-
     jmp   _update
 
 _player1:
