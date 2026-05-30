@@ -487,12 +487,12 @@ _get_ready:
 	;;
 	mov   R0,           1
 	cif   R0
-	fmul  R0,           3.14
+	fmul  R0,           3.14159
 	fdiv  R0,           180.0
 	fmul  R0,           4.0
 	fmul  R0,           R1
 	sin   R0
-	fmul  R0,           16.0
+	fmul  R0,           8.0
 	cfi   R0
 
 	out   REGION,       GETREADY
@@ -502,6 +502,12 @@ _get_ready:
 	iadd  R1,           R0
 	out   DRAWY,        R1
 	out   GPUCMD,       DRAW
+
+    iadd  R0,           48
+    out   TEXTURE,      -1
+    out   REGION,       R0
+    out   DRAWX,        500
+    out   GPUCMD,       DRAW
 
 	mov   R0,           P1_DELAY         ; adjust player delay
 	iadd  R0,           R5
