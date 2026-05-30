@@ -51,10 +51,15 @@
 %define   P1_Y          0x0000000F
 %define   P2_Y          0x00000010
 %define   P3_Y          0x00000011
+%define   P1_DELAY      0x00000012
+%define   P2_DELAY      0x00000013
+%define   P3_DELAY      0x00000014
 %define   TITLESCREEN   0
 %define   GAMEPLAY1     1
 %define   GAMEPLAY2     2
 %define   GAMEPLAY3     3
+%define   BLANK         4
+%define   GETREADY      5
 %define   PLAYER1A      10
 %define   PLAYER1B      11
 %define   PLAYER1C      12
@@ -193,6 +198,44 @@ _start:
     mov   R0,           723
     out   MAXX,         R0
     mov   R0,           359
+    out   MAXY,         R0
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;
+    ;; select and define BLANK region
+    ;;
+    mov   R0,           BLANK
+    out   REGION,       R0
+    mov   R0,           768
+    out   MINX,         R0
+    mov   R0,           360
+    out   MINY,         R0
+    mov   R0,           768
+    out   HOTX,         R0
+    mov   R0,           360
+    out   HOTY,         R0
+    mov   R0,           980
+    out   MAXX,         R0
+    mov   R0,           720
+    out   MAXY,         R0
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;
+    ;; select and define GETREADY region
+    ;;
+    mov   R0,           GETREADY
+    out   REGION,       R0
+    mov   R0,           260
+    out   MINX,         R0
+    mov   R0,           430
+    out   MINY,         R0
+    mov   R0,           260
+    out   HOTX,         R0
+    mov   R0,           430
+    out   HOTY,         R0
+    mov   R0,           452
+    out   MAXX,         R0
+    mov   R0,           494
     out   MAXY,         R0
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -343,16 +386,8 @@ _start:
 ;;
 _update:
     in    R5,           FRAME            ; obtain current frame from FrameCounter
-    mov   R0,           R5               ; do frame 0 processing
     imod  R5,           3                ; modulus by 3
 
-    imod  R0,           60               ; do frame absolute 0 processing (per second)
-    ieq   R0,           0
-    jf    R0,           _not_clear
-
-    out   GPUCMD,       CLS
-
-_not_clear:
     mov   R1,           _frame_offsets   ; load frame processing routine offsets
     iadd  R1,           R5               ; increment offset based on frame
     mov   R1,           [R1]             ; dereference offset to get actual offset
@@ -367,7 +402,7 @@ _not_clear:
 _check:
     out   GAMEPAD,      R5               ; select gamepad based on frame
     in    R0,           CONNECTED        ; check if player's gamepad is connected
-    jf    R0,           _wait_update     ; if not, do nothing (skip this next part)
+    jf    R0,           _blank_slice     ; if not, do nothing (skip this next part)
 
     mov   R0,           [R2]             ; check player's mode (0->title, 1->gameplay)
     jt    R0,           _update_frame    ; if non-zero: proceed to gameplay logic
@@ -387,14 +422,16 @@ _boop:
     out   GPUCMD,       DRAW
 
     out   REGION,       TITLESCREEN
+	iadd  R8,           8
+    out   DRAWX,        R8
     out   GPUCMD,       DRAW
 
-    mov   R0,           R5
-    iadd  R0,           48
-    out   TEXTURE,      -1
-    out   REGION,       R0
-    out   DRAWX,        500
-    out   GPUCMD,       DRAW
+    ;mov   R0,           R5
+    ;iadd  R0,           48
+    ;out   TEXTURE,      -1
+    ;out   REGION,       R0
+    ;out   DRAWX,        500
+    ;out   GPUCMD,       DRAW
 
     jmp  _wait_update
 
@@ -407,6 +444,11 @@ _update_frame:                           ; gameplay in session
     out   DRAWX,        R8
     out   DRAWY,        0
     out   GPUCMD,       DRAW
+
+	mov   R0,           P1_DELAY         ; check for player delay
+	iadd  R0,           R5
+	mov   R0,           [R0]
+	jt    R0,           _get_ready    
 
     call  _process
     ;call  _detect
@@ -422,6 +464,52 @@ _update_frame:                           ; gameplay in session
 _wait_update:
     wait
     jmp   _update
+
+_blank_slice:
+    out   REGION,       BLANK            ; blank the slice
+    out   DRAWX,        R8
+    out   DRAWY,        0
+    out   GPUCMD,       DRAW
+
+	mov   R0,           0
+    mov   [R2],         R0               ; reset slice
+
+	jmp   _wait_update
+
+_get_ready:
+	mov   R0,           P1_DELAY         ; get player delay
+	iadd  R0,           R5
+	mov   R1,           [R0]
+
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	;;
+	;; y = 16 * sin (4 * PI/180 * delayvalue)
+	;;
+	mov   R0,           1
+	cif   R0
+	fmul  R0,           3.14
+	fdiv  R0,           180.0
+	fmul  R0,           4.0
+	fmul  R0,           R1
+	sin   R0
+	fmul  R0,           16.0
+	cfi   R0
+
+	out   REGION,       GETREADY
+	iadd  R8,           8
+	out   DRAWX,        R8
+	mov   R1,           128
+	iadd  R1,           R0
+	out   DRAWY,        R1
+	out   GPUCMD,       DRAW
+
+	mov   R0,           P1_DELAY         ; adjust player delay
+	iadd  R0,           R5
+	mov   R1,           [R0]
+	isub  R1,           1
+	mov   [R0],         R1
+
+	jmp   _wait_update
 
 _player1:
     mov   R2,           PLAYER1A
@@ -474,6 +562,12 @@ _player_done:
     ret
 
 _player_start:
+	mov   R0,           P1_DELAY         ; set up player delay
+	iadd  R0,           R5
+
+	mov   R1,           60               ; delay for 1 second
+	mov   [R0],         R1               ; save to memory
+
     jmp   _update
 
 _player_slices:
