@@ -480,6 +480,12 @@ _update_frame:                           ; gameplay in session
     out   DRAWY,        0
     out   GPUCMD,       DRAW
 
+	mov   R0,           P1_MODE
+	iadd  R0,           R5
+	mov   R0,           [R0]
+	ieq   R0,           2
+	jt    R0,           _main_frame
+
     mov   R0,           P1_DELAY         ; check for player delay
     iadd  R0,           R5
     mov   R0,           [R0]
@@ -562,6 +568,14 @@ _ready_convert:
     isub  R1,           1
     mov   [R0],         R1
 
+	ieq   R1,           0
+	jf    R1,           _wait_update
+
+    mov   R2,           P1_MODE
+    iadd  R2,           R5
+	mov   R0,           2
+	mov   [R2],         R0
+
     jmp   _wait_update
 
 _player1:
@@ -595,8 +609,14 @@ _process:
     call  GETINPUT
     igt   R0,           0
     jf    R0,           _player_not_up
+
+    ;; attempting sine wave
+    mov   R0,           P1_DELAY         ; adjust player delay
+    iadd  R0,           R5
+    mov   R1,           90
+    mov   [R0],         R1
     
-    isub  R4,           5
+    ;isub  R4,           5
 
     iadd  R2,           1
     out   REGION,       R2
@@ -609,9 +629,49 @@ _player_not_up:
     out   REGION,       R2
 
 _player_done:
+    mov   R0,           P1_DELAY         ; get player delay
+    iadd  R0,           R5
+    mov   R1,           [R0]
+    cif   R1
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;
+    ;; y = 360 * sin (12 * PI/180 * delayvalue) * amplify
+    ;;
+    mov   R0,           1
+    cif   R0
+    fmul  R0,           3.14159
+    fdiv  R0,           180.0
+    fmul  R0,           12.0
+    fmul  R0,           R1
+    sin   R0
+    fmul  R0,           16.0
+	fmul  R0,           1.125            ; amplify the wave
+
+	mov   R1,           R0
+	fgt   R1,           16.0
+	jf    R1,           _player_lower
+	mov   R0,           16.0
+
+_player_lower:   
+	mov   R1,           R0
+	flt   R1,           -16.0
+	jf    R1,           _player_convert
+	mov   R0,           -16.0
+
+_player_convert:
+    cfi   R0
+	mov   R4,           R0
+
     out   DRAWX,        R3
     out   DRAWY,        R4
     out   GPUCMD,       DRAW
+
+    mov   R0,           P1_DELAY         ; decrement player delay
+    iadd  R0,           R5
+    mov   R1,           [R0]
+    isub  R1,           1
+    mov   [R0],         R1
     ret
 
 _player_start:
