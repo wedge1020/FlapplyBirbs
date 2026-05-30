@@ -421,9 +421,46 @@ _boop:
     out   DRAWY,        0
     out   GPUCMD,       DRAW
 
+    in    R1,           FRAME            ; get frame counter value
+	;mov   R0,           R1
+	;imod  R0,           3
+	;ieq   R0,           2
+	;jt    R0,           _display_title
+    cif   R1
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;
+    ;; y = 8 * sin (12 * PI/180 * framecounter) * amplify
+    ;;
+    mov   R0,           1
+    cif   R0
+    fmul  R0,           3.14159
+    fdiv  R0,           180.0
+    fmul  R0,           3.0
+    fmul  R0,           R1
+    sin   R0
+    fmul  R0,           8.0
+	fmul  R0,           1.25              ; slope multiplier
+
+	mov   R1,           R0
+	fgt   R1,           7.0
+	jf    R1,           _title_lower
+	mov   R0,           7.0
+
+_title_lower:   
+	mov   R1,           R0
+	flt   R1,           -7.0
+	jf    R1,           _title_convert
+	mov   R0,           -7.0
+
+_title_convert:
+    cfi   R0
+
+_display_title:
     out   REGION,       TITLESCREEN
     iadd  R8,           8
     out   DRAWX,        R8
+	out   DRAWY,        R0
     out   GPUCMD,       DRAW
 
     ;mov   R0,           R5
@@ -485,16 +522,30 @@ _get_ready:
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;
-    ;; y = 16 * sin (4 * PI/180 * delayvalue)
+    ;; y = 8 * sin (12 * PI/180 * delayvalue) * amplify
     ;;
     mov   R0,           1
     cif   R0
     fmul  R0,           3.14159
     fdiv  R0,           180.0
-    fmul  R0,           4.0
+    fmul  R0,           12.0
     fmul  R0,           R1
     sin   R0
     fmul  R0,           8.0
+	fmul  R0,           1.125            ; amplify the wave
+
+	mov   R1,           R0
+	fgt   R1,           8.0
+	jf    R1,           _ready_lower
+	mov   R0,           8.0
+
+_ready_lower:   
+	mov   R1,           R0
+	flt   R1,           -8.0
+	jf    R1,           _ready_convert
+	mov   R0,           -8.0
+
+_ready_convert:
     cfi   R0
 
     out   REGION,       GETREADY
