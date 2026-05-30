@@ -343,8 +343,16 @@ _start:
 ;;
 _update:
     in    R5,           FRAME            ; obtain current frame from FrameCounter
+    mov   R0,           R5               ; do frame 0 processing
     imod  R5,           3                ; modulus by 3
 
+    imod  R0,           60               ; do frame absolute 0 processing (per second)
+    ieq   R0,           0
+    jf    R0,           _not_clear
+
+    out   GPUCMD,       CLS
+
+_not_clear:
     mov   R1,           _frame_offsets   ; load frame processing routine offsets
     iadd  R1,           R5               ; increment offset based on frame
     mov   R1,           [R1]             ; dereference offset to get actual offset
